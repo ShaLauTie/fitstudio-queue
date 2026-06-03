@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>apetto FitStudio - 寵物虛擬試衣間</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-glow bg-glow-1"></div>
+    <div class="background-glow bg-glow-2"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area-wrapper">
+                <div class="logo-area">
+                    <span class="brand-text">apetto <span class="accent-text">FitStudio</span></span>
+                </div>
+                <div class="api-status-container">
+                    <div class="api-indicator disconnected" id="api-indicator">
+                        <span class="indicator-dot"></span>
+                        <span class="indicator-text">Playwright 伺服器連線中...</span>
+                    </div>
+                    <button class="btn-github-config" id="btn-github-config" title="GitHub 設定">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                        GitHub 設定
+                    </button>
+                </div>
+            </div>
+            <div class="tagline">小汪虛擬試衣間 • 不只可愛，更有帥氣</div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="workspace">
+            <!-- Left Panel: Controls & Options -->
+            <section class="panel left-panel glass-panel" id="controls-panel">
+                <div class="panel-section">
+                    <h2 class="section-title"><span class="step-num">1</span> 選擇或上傳狗狗照片</h2>
+                    
+                    <!-- Upload Box -->
+                    <div class="upload-box" id="drop-zone">
+                        <input type="file" id="file-upload" accept="image/*" class="file-input">
+                        <div class="upload-prompt" id="upload-prompt">
+                            <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            <span class="main-prompt">拖曳狗狗照片至此，或 <span class="browse-link">瀏覽檔案</span></span>
+                            <span class="sub-prompt">支援 JPG, PNG, WEBP</span>
+                        </div>
+                        <!-- Preview after upload -->
+                        <div class="upload-preview" id="upload-preview" style="display:none">
+                            <img id="dog-preview-img" src="" alt="狗狗預覽">
+                            <span class="preview-change">🔄 點擊或拖曳以更換圖片</span>
+                        </div>
+                    </div>
+
+                    <!-- Demo Dogs Presets -->
+                    <div class="preset-container">
+                        <span class="preset-label">使用示範狗狗試穿：</span>
+                        <div class="preset-buttons">
+                            <button class="btn btn-preset active" data-dog="assets/dog_golden.jpg" id="btn-dog-golden">
+                                <span class="dog-thumb thumb-golden"></span> 黃金獵犬幼犬
+                            </button>
+                            <button class="btn btn-preset" data-dog="assets/dog_labrador.webp" id="btn-dog-labrador">
+                                <span class="dog-thumb thumb-labrador"></span> 棕色拉布拉多
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h2 class="section-title"><span class="step-num">2</span> 選擇 apetto 經典雨衣</h2>
+                    <div class="clothes-carousel">
+                        <!-- Pink Raincoat -->
+                        <div class="clothes-card" data-clothes="assets/pink_raincoat.png" id="card-pink">
+                            <div class="clothes-preview-container">
+                                <img src="assets/pink_raincoat.png" alt="粉紅雨衣" class="clothes-img-thumb">
+                            </div>
+                            <div class="clothes-info">
+                                <span class="clothes-name">Pink Blossom</span>
+                                <span class="clothes-color-tag color-pink">櫻花粉</span>
+                            </div>
+                        </div>
+
+                        <!-- Lime Raincoat -->
+                        <div class="clothes-card" data-clothes="assets/lime_raincoat.png" id="card-lime">
+                            <div class="clothes-preview-container">
+                                <img src="assets/lime_raincoat.png" alt="黃綠雨衣" class="clothes-img-thumb">
+                            </div>
+                            <div class="clothes-info">
+                                <span class="clothes-name">Neon Lime</span>
+                                <span class="clothes-color-tag color-lime">螢光綠</span>
+                            </div>
+                        </div>
+
+                        <!-- Blue Raincoat -->
+                        <div class="clothes-card" data-clothes="assets/blue_raincoat.png" id="card-blue">
+                            <div class="clothes-preview-container">
+                                <img src="assets/blue_raincoat.png" alt="深藍雨衣" class="clothes-img-thumb">
+                            </div>
+                            <div class="clothes-info">
+                                <span class="clothes-name">Deep Ocean</span>
+                                <span class="clothes-color-tag color-blue">深海藍</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Big Real AI Button -->
+                <div class="panel-section" id="adjustment-section">
+                    <button class="btn btn-real-ai-big" id="btn-real-ai" disabled>
+                        <span class="ai-icon-big">🔥</span>
+                        <span class="ai-btn-text">
+                            <span class="ai-btn-main">Real AI 生成</span>
+                            <span class="ai-btn-sub">Gemini AI 自動穿衣</span>
+                        </span>
+                    </button>
+                </div>
+            </section>
+
+
+            <!-- Right Panel: Canvas Preview -->
+            <section class="panel right-panel">
+                <div class="canvas-outer-container glass-panel">
+                    <div class="canvas-wrapper" id="canvas-wrapper">
+                        <!-- Canvas -->
+                        <canvas id="fitting-canvas"></canvas>
+                        
+                        <!-- AI Scanning Laser Effect -->
+                        <div class="scanner-laser" id="scanner-laser"></div>
+                        
+                        <!-- AI Scanning Mesh Overlay -->
+                        <div class="scanner-grid" id="scanner-grid"></div>
+
+                        <!-- Canvas Placeholder Overlay -->
+                        <div class="canvas-placeholder" id="canvas-placeholder">
+                            <svg class="placeholder-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <h3>準備試衣</h3>
+                            <p>請從左方選擇一隻狗狗照片，並為牠穿上帥氣的雨衣吧！</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Bar -->
+                <div class="export-bar glass-panel disabled" id="export-bar">
+                    <div class="tips-text">
+                        <span class="info-bulb">💡</span> 您可以直接在畫布上<strong>按住拖曳</strong>衣服來調整位置。
+                    </div>
+                    <button class="btn btn-primary" id="btn-export">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        儲存並下載照片
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+
+
+    <!-- AI Generating Loading Modal -->
+    <div class="modal-overlay" id="ai-loading-modal">
+        <div class="modal-content loading-content">
+            <div class="ai-loading-portal">
+                <div class="portal-ring ring-1"></div>
+                <div class="portal-ring ring-2"></div>
+                <div class="portal-ring ring-3"></div>
+                <div class="portal-core">🐕</div>
+            </div>
+            <h3 class="loading-title">Real AI 智慧生成中</h3>
+            <p class="loading-desc">準備中...</p>
+            <div class="loading-bar-container">
+                <div class="loading-bar-progress" id="loading-progress-bar" style="width:0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GitHub Config Modal -->
+    <div class="modal-overlay" id="github-config-modal">
+        <div class="modal-content github-config-content">
+            <button class="modal-close" id="btn-close-github-config">&times;</button>
+            <div class="github-config-header">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                <h3>GitHub Bridge 設定</h3>
+                <p>圖片透過你的 Private Repo 中繼，本機不需要開放任何 port</p>
+            </div>
+            <div class="github-config-fields">
+                <label>GitHub Owner（帳號名稱）
+                    <input type="text" id="gh-owner" placeholder="例如: johndoe" autocomplete="off">
+                </label>
+                <label>Repo 名稱
+                    <input type="text" id="gh-repo" placeholder="例如: fitstudio-queue" autocomplete="off">
+                </label>
+                <label>Personal Access Token
+                    <div class="token-input-wrap">
+                        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxx" autocomplete="off">
+                        <button class="btn-toggle-token" id="btn-toggle-gh-token">👁</button>
+                    </div>
+                    <small>需要 <code>repo</code> 或 <code>contents</code> 權限</small>
+                </label>
+                <label>Branch
+                    <input type="text" id="gh-branch" placeholder="main" value="main" autocomplete="off">
+                </label>
+            </div>
+            <div class="github-config-actions">
+                <button class="btn-gh-save" id="btn-save-github">💾 儲存設定</button>
+                <button class="btn-gh-test" id="btn-test-github">🔗 測試連線</button>
+            </div>
+            <div class="github-config-status" id="github-config-status"></div>
+            <div class="github-config-hint">
+                <strong>使用流程：</strong><br>
+                1. 在 GitHub 建一個 Private Repo（例如 <code>fitstudio-queue</code>）<br>
+                2. 建立 Personal Access Token（Settings → Developer settings → PAT → Classic）<br>
+                3. 本機執行 <code>node worker.js</code>（需填寫 worker-config.json）<br>
+                4. 手機從任何地方都可以使用！
+            </div>
+        </div>
+    </div>
+
+    <script src="assets_data.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
