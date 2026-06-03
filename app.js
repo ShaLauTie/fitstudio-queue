@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    apetto FitStudio Core Interactive Script
    HTML5 Canvas Editor + Real-Time Chroma Key Background Removal
    ========================================================================== */
@@ -495,17 +495,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
 
     // ── GitHub config helpers ──────────────────────────────────────────────
+    // Owner/repo are fixed — only token needs to be entered by user
+    const GH_OWNER  = 'ShaLauTie';
+    const GH_REPO   = 'fitstudio-queue';
+    const GH_BRANCH = 'main';
+
     function getGhConfig() {
         return {
-            owner:  localStorage.getItem('gh_owner')  || '',
-            repo:   localStorage.getItem('gh_repo')   || '',
-            token:  localStorage.getItem('gh_token')  || '',
-            branch: localStorage.getItem('gh_branch') || 'main',
+            owner:  GH_OWNER,
+            repo:   GH_REPO,
+            token:  localStorage.getItem('gh_token') || '',
+            branch: GH_BRANCH,
         };
     }
     function isGhConfigured() {
-        const c = getGhConfig();
-        return !!(c.owner && c.repo && c.token);
+        return !!localStorage.getItem('gh_token');
     }
     function ghApiBase() {
         const c = getGhConfig();
@@ -618,13 +622,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const ghTokenEl   = document.getElementById('gh-token');
     const ghBranchEl  = document.getElementById('gh-branch');
 
-    // Open modal: populate with saved values
+    // Open modal: only show token (owner/repo are fixed)
     document.getElementById('btn-github-config').addEventListener('click', () => {
-        const c = getGhConfig();
-        ghOwnerEl.value  = c.owner;
-        ghRepoEl.value   = c.repo;
-        ghTokenEl.value  = c.token;
-        ghBranchEl.value = c.branch;
+        ghTokenEl.value        = localStorage.getItem('gh_token') || '';
         ghStatusEl.textContent = '';
         ghStatusEl.className   = 'github-config-status';
         ghModal.classList.add('active');
@@ -642,40 +642,41 @@ document.addEventListener('DOMContentLoaded', () => {
         ghTokenEl.type = ghTokenEl.type === 'password' ? 'text' : 'password';
     });
 
-    // Save
+    // Save — only token needed
     document.getElementById('btn-save-github').addEventListener('click', () => {
-        localStorage.setItem('gh_owner',  ghOwnerEl.value.trim());
-        localStorage.setItem('gh_repo',   ghRepoEl.value.trim());
-        localStorage.setItem('gh_token',  ghTokenEl.value.trim());
-        localStorage.setItem('gh_branch', ghBranchEl.value.trim() || 'main');
+        const token = ghTokenEl.value.trim();
+        if (!token) {
+            ghStatusEl.textContent = '❌ 請輸入 Token';
+            ghStatusEl.className   = 'github-config-status error';
+            return;
+        }
+        localStorage.setItem('gh_token', token);
         ghStatusEl.textContent = '✅ 已儲存！';
         ghStatusEl.className   = 'github-config-status ok';
         updateIndicator();
         setTimeout(() => ghModal.classList.remove('active'), 800);
     });
 
-    // Test connection
+    // Test connection — use hardcoded owner/repo
     document.getElementById('btn-test-github').addEventListener('click', async () => {
-        const owner  = ghOwnerEl.value.trim();
-        const repo   = ghRepoEl.value.trim();
-        const token  = ghTokenEl.value.trim();
-        if (!owner || !repo || !token) {
-            ghStatusEl.textContent = '❌ 請填寫所有欄位';
+        const token = ghTokenEl.value.trim();
+        if (!token) {
+            ghStatusEl.textContent = '❌ 請先填入 Token';
             ghStatusEl.className   = 'github-config-status error';
             return;
         }
         ghStatusEl.textContent = '🔗 測試中...';
         ghStatusEl.className   = 'github-config-status';
         try {
-            const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+            const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`, {
                 headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' },
             });
             if (res.ok) {
                 const data = await res.json();
-                ghStatusEl.textContent = `✅ 連線成功！Repo: ${data.full_name} (${data.private ? '🔒 Private' : '🌐 Public'})`;
+                ghStatusEl.textContent = `✅ 連線成功！${data.full_name}`;
                 ghStatusEl.className   = 'github-config-status ok';
             } else {
-                ghStatusEl.textContent = `❌ 失敗 (${res.status})：Token 或 Repo 名稱有誤`;
+                ghStatusEl.textContent = `❌ 失敗 (${res.status})：Token 有誤或權限不足`;
                 ghStatusEl.className   = 'github-config-status error';
             }
         } catch (e) {
