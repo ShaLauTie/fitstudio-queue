@@ -1177,7 +1177,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (btnRealAi) btnRealAi.disabled = true;
                     resizeCanvasToFit();
                     draw();
-                    // 生成完成，靜默顯示結果（不跳出 alert）
+                    // 生成完成，自動捲到畫布讓使用者看到照片
+                    setTimeout(function() {
+                        var canvas = document.getElementById('fitting-canvas');
+                        if (canvas) canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
 
                 };
                 newDog.src = resultImageSrc;
