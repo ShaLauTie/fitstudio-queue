@@ -494,37 +494,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 8. Playwright Server Status Check
     // ==========================================================================
 
-    // ── GitHub config helpers ──────────────────────────────────────────────
-    // Owner/repo are fixed — only token needs to be entered by user
-    const GH_OWNER  = 'ShaLauTie';
-    const GH_REPO   = 'fitstudio-queue';
-    const GH_BRANCH = 'main';
+    // ── GitHub Bridge via Netlify Proxy (token is server-side, never in browser) ──
+    const PROXY = '/api/github-proxy';
 
-    function getGhConfig() {
-        return {
-            owner:  GH_OWNER,
-            repo:   GH_REPO,
-            token:  localStorage.getItem('gh_token') || '',
-            branch: GH_BRANCH,
-        };
-    }
-    function isGhConfigured() {
-        return !!localStorage.getItem('gh_token');
-    }
-    function ghApiBase() {
-        const c = getGhConfig();
-        return `https://api.github.com/repos/${c.owner}/${c.repo}`;
-    }
-    function ghHeaders() {
-        return {
-            'Authorization': `Bearer ${getGhConfig().token}`,
-            'Accept':        'application/vnd.github+json',
-            'Content-Type':  'application/json',
-            'X-GitHub-Api-Version': '2022-11-28',
-        };
-    }
-
-    // Compress image to reduce GitHub file size
+    // Compress image to reduce payload size
     function compressImage(src, maxPx = 800, quality = 0.82) {
         return new Promise(resolve => {
             const img = new Image();
@@ -536,154 +509,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                 resolve(canvas.toDataURL('image/jpeg', quality));
             };
-            img.onerror = () => resolve(src); // fallback: original
+            img.onerror = () => resolve(src);
             img.src = src;
         });
     }
 
-    // Upload job to GitHub
+    // Upload job via proxy
     async function ghUploadJob(jobId, dogSrc, clothesSrc) {
-        const { branch } = getGhConfig();
-        const content = JSON.stringify({
-            jobId,
-            createdAt: new Date().toISOString(),
-            dogImage:     dogSrc,
-            clothesImage: clothesSrc,
+        const res = await fetch(PROXY, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'upload', jobId, dogImage: dogSrc, clothesImage: clothesSrc }),
         });
-        const filePath = `jobs/pending/${jobId}.json`;
-        const url = `${ghApiBase()}/contents/${filePath}`;
-        const res = await fetch(url, {
-            method:  'PUT',
-            headers: ghHeaders(),
-            body: JSON.stringify({
-                message: `New job ${jobId}`,
-                branch,
-                content: btoa(content),
-            }),
-        });
-        if (!res.ok) {
-            const err = await res.text();
-            throw new Error(`GitHub 上傳失敗 (${res.status}): ${err}`);
-        }
+        const data = await res.json();
+        if (!data.success) throw new Error('上傳失敗: ' + (data.error || res.status));
     }
 
-    // Poll GitHub for result file (max 6 min)
+    // Poll result via proxy (max 6 min)
     async function ghPollResult(jobId) {
-        const { branch } = getGhConfig();
-        const filePath = `jobs/done/${jobId}.json`;
-        const url = `${ghApiBase()}/contents/${filePath}?ref=${branch}`;
-        for (let i = 0; i < 72; i++) {   // 72 × 5s = 6 min
+        for (let i = 0; i < 72; i++) {
             await new Promise(r => setTimeout(r, 5000));
             try {
-                const res = await fetch(url, { headers: ghHeaders() });
-                if (res.ok) {
-                    const data    = await res.json();
-                    const parsed  = JSON.parse(atob(data.content));
-                    return { image: parsed.resultImage, sha: data.sha };
-                }
+                const res  = await fetch(`${PROXY}?action=poll&jobId=${jobId}`);
+                const data = await res.json();
+                if (data.found) return { image: data.image, sha: data.sha };
             } catch (_) {}
         }
         throw new Error('等待超時（6 分鐘），Gemini 未回應');
     }
 
-    // Delete a file from GitHub (cleanup)
+    // Cleanup via proxy
     async function ghDeleteFile(filePath, sha) {
-        const { branch } = getGhConfig();
-        const url = `${ghApiBase()}/contents/${filePath}`;
         try {
-            await fetch(url, {
-                method:  'DELETE',
-                headers: ghHeaders(),
-                body: JSON.stringify({ message: `Cleanup ${filePath}`, branch, sha }),
+            await fetch(PROXY, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete', filePath, sha }),
             });
         } catch (_) {}
     }
 
-    // Update indicator based on GitHub config
+    // Indicator — always connected when on Netlify
     function updateIndicator() {
-        const btnGhConfig = document.getElementById('btn-github-config');
-        if (isGhConfigured()) {
-            apiIndicator.className = 'api-indicator connected';
-            apiIndicator.querySelector('.indicator-text').textContent = 'GitHub Bridge ✅';
-            if (btnGhConfig) btnGhConfig.classList.add('configured');
-        } else {
-            apiIndicator.className = 'api-indicator disconnected';
-            apiIndicator.querySelector('.indicator-text').textContent = '請設定 GitHub Bridge';
-            if (btnGhConfig) btnGhConfig.classList.remove('configured');
-        }
+        apiIndicator.className = 'api-indicator connected';
+        apiIndicator.querySelector('.indicator-text').textContent = 'GitHub Bridge ✅';
     }
     updateIndicator();
-
-    // ── GitHub config modal handlers ───────────────────────────────────────
-    const ghModal     = document.getElementById('github-config-modal');
-    const ghStatusEl  = document.getElementById('github-config-status');
-    const ghOwnerEl   = document.getElementById('gh-owner');
-    const ghRepoEl    = document.getElementById('gh-repo');
-    const ghTokenEl   = document.getElementById('gh-token');
-    const ghBranchEl  = document.getElementById('gh-branch');
-
-    // Open modal: only show token (owner/repo are fixed)
-    document.getElementById('btn-github-config').addEventListener('click', () => {
-        ghTokenEl.value        = localStorage.getItem('gh_token') || '';
-        ghStatusEl.textContent = '';
-        ghStatusEl.className   = 'github-config-status';
-        ghModal.classList.add('active');
-    });
-
-    document.getElementById('btn-close-github-config').addEventListener('click', () => {
-        ghModal.classList.remove('active');
-    });
-    ghModal.addEventListener('click', e => {
-        if (e.target === ghModal) ghModal.classList.remove('active');
-    });
-
-    // Toggle token visibility
-    document.getElementById('btn-toggle-gh-token').addEventListener('click', () => {
-        ghTokenEl.type = ghTokenEl.type === 'password' ? 'text' : 'password';
-    });
-
-    // Save — only token needed
-    document.getElementById('btn-save-github').addEventListener('click', () => {
-        const token = ghTokenEl.value.trim();
-        if (!token) {
-            ghStatusEl.textContent = '❌ 請輸入 Token';
-            ghStatusEl.className   = 'github-config-status error';
-            return;
-        }
-        localStorage.setItem('gh_token', token);
-        ghStatusEl.textContent = '✅ 已儲存！';
-        ghStatusEl.className   = 'github-config-status ok';
-        updateIndicator();
-        setTimeout(() => ghModal.classList.remove('active'), 800);
-    });
-
-    // Test connection — use hardcoded owner/repo
-    document.getElementById('btn-test-github').addEventListener('click', async () => {
-        const token = ghTokenEl.value.trim();
-        if (!token) {
-            ghStatusEl.textContent = '❌ 請先填入 Token';
-            ghStatusEl.className   = 'github-config-status error';
-            return;
-        }
-        ghStatusEl.textContent = '🔗 測試中...';
-        ghStatusEl.className   = 'github-config-status';
-        try {
-            const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`, {
-                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' },
-            });
-            if (res.ok) {
-                const data = await res.json();
-                ghStatusEl.textContent = `✅ 連線成功！${data.full_name}`;
-                ghStatusEl.className   = 'github-config-status ok';
-            } else {
-                ghStatusEl.textContent = `❌ 失敗 (${res.status})：Token 有誤或權限不足`;
-                ghStatusEl.className   = 'github-config-status error';
-            }
-        } catch (e) {
-            ghStatusEl.textContent = `❌ 網路錯誤: ${e.message}`;
-            ghStatusEl.className   = 'github-config-status error';
-        }
-    });
 
     // ==========================================================================
     // 9. Real-time Progress Display (client-side timer, no network needed)
