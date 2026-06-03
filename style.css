@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    apetto FitStudio Core Stylesheet
    Design Style: Cyberpunk Minimalist Premium (Dark Mode, Glassmorphism, Neon Glows)
    ========================================================================== */
@@ -122,11 +122,6 @@ body {
     }
 }
 
-/* ── Desktop compact mode: everything fits without scrolling ── */
-@media (min-width: 1025px) {
-    .glass-panel {
-        padding: 1.25rem 1.5rem;
-    }
     .panel {
         gap: 1rem;
     }
@@ -1770,4 +1765,34 @@ body {
     transition: color 0.2s;
 }
 .modal-close:hover { color: #fff; }
+/* ========================================================================== 
+   🖥️ DESKTOP COMPACT — always fits without scrolling (must be LAST)
+   ========================================================================== */
+@media (min-width: 1025px) {
+    .glass-panel        { padding: 1.25rem 1.5rem; }
+    .panel              { gap: 0.85rem; flex: 1; justify-content: space-between; }
+    .panel-section      { gap: 0.6rem; }
+    .section-title      { font-size: 0.98rem; }
 
+    /* Upload box */
+    .upload-box         { padding: 0.9rem 1.5rem; }
+    .upload-icon        { width: 30px; height: 30px; }
+    .main-prompt        { font-size: 0.86rem; }
+    .sub-prompt         { font-size: 0.75rem; }
+
+    /* Sample dogs */
+    .preset-container   { gap: 0.35rem; }
+    .preset-label       { font-size: 0.78rem; }
+    .btn-preset         { padding: 0.4rem 0.6rem; font-size: 0.8rem; }
+    .dog-thumb          { width: 18px; height: 18px; }
+
+    /* Raincoat cards */
+    .clothes-carousel   { gap: 0.55rem; }
+    .clothes-card       { padding: 0.45rem; gap: 0.35rem; }
+    .clothes-preview-container { aspect-ratio: 5/4; }
+    .clothes-name       { font-size: 0.76rem; }
+    .clothes-color-tag  { font-size: 0.65rem; padding: 0.08rem 0.28rem; }
+
+    /* Real AI button */
+    .btn-real-ai-big    { padding: 0.8rem 1.5rem; font-size: 0.92rem; }
+}
