@@ -1177,7 +1177,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (btnRealAi) btnRealAi.disabled = true;
                     resizeCanvasToFit();
                     draw();
-                    setTimeout(function() { alert('AI generation complete! Download the photo!'); }, 100);
+                    // 生成完成，靜默顯示結果（不跳出 alert）
+
                 };
                 newDog.src = resultImageSrc;
                 await ghDeleteFile('jobs/done/' + jobId + '.json', resultSha);
