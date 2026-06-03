@@ -435,60 +435,53 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
 
     btnExport.addEventListener('click', () => {
-        if (!dogImage || !clothesTransparentImage) return;
-        
-        // Create high-res download output
-        const outputCanvas = document.createElement('canvas');
-        const oCtx = outputCanvas.getContext('2d');
-        
-        // Use original dog image dimensions for high res
-        outputCanvas.width = dogImage.width;
-        outputCanvas.height = dogImage.height;
-        
-        // 1. Draw Dog at Full Res
-        oCtx.drawImage(dogImage, 0, 0, outputCanvas.width, outputCanvas.height);
-        
-        // 2. Draw Clothes Overlay at mapped high res
-        oCtx.save();
-        
-        // Set opacity
-        oCtx.globalAlpha = overlayState.opacity;
-        
-        // Map current coordinates to high-res coordinates
-        const scaleFactorX = dogImage.width / canvas.width;
-        const scaleFactorY = dogImage.height / canvas.height;
-        
-        const mappedX = overlayState.x * scaleFactorX;
-        const mappedY = overlayState.y * scaleFactorY;
-        
-        oCtx.translate(mappedX, mappedY);
-        oCtx.rotate(overlayState.rotate * Math.PI / 180);
-        
-        // Scale includes screen-to-highres mapping
-        const rawScale = overlayState.scale * scaleFactorX; 
-        const scaleX = overlayState.mirrored ? -rawScale : rawScale;
-        oCtx.scale(scaleX, rawScale);
-        
-        // Drawcentered
-        const drawWidth = canvas.width * 0.4;
-        const drawHeight = drawWidth * (clothesRawImage.height / clothesRawImage.width);
-        
-        oCtx.drawImage(
-            clothesTransparentImage, 
-            -drawWidth / 2, 
-            -drawHeight / 2, 
-            drawWidth, 
-            drawHeight
-        );
-        
-        oCtx.restore();
-        
-        // Download Link
+        if (!dogImage) return;
+
         const link = document.createElement('a');
         link.download = 'apetto-fitstudio-result.png';
+
+        // AI 生成模式：衣服已合成在狗狗圖片上，直接下載
+        if (!clothesTransparentImage) {
+            const outputCanvas = document.createElement('canvas');
+            outputCanvas.width  = dogImage.width;
+            outputCanvas.height = dogImage.height;
+            outputCanvas.getContext('2d').drawImage(dogImage, 0, 0);
+            link.href = outputCanvas.toDataURL('image/png');
+            link.click();
+            return;
+        }
+
+        // 手動疊加模式：合成狗狗 + 雨衣
+        const outputCanvas = document.createElement('canvas');
+        const oCtx = outputCanvas.getContext('2d');
+        outputCanvas.width  = dogImage.width;
+        outputCanvas.height = dogImage.height;
+
+        oCtx.drawImage(dogImage, 0, 0, outputCanvas.width, outputCanvas.height);
+        oCtx.save();
+        oCtx.globalAlpha = overlayState.opacity;
+
+        const scaleFactorX = dogImage.width  / canvas.width;
+        const scaleFactorY = dogImage.height / canvas.height;
+        const mappedX = overlayState.x * scaleFactorX;
+        const mappedY = overlayState.y * scaleFactorY;
+
+        oCtx.translate(mappedX, mappedY);
+        oCtx.rotate(overlayState.rotate * Math.PI / 180);
+
+        const rawScale = overlayState.scale * scaleFactorX;
+        const scaleX   = overlayState.mirrored ? -rawScale : rawScale;
+        oCtx.scale(scaleX, rawScale);
+
+        const drawWidth  = canvas.width * 0.4;
+        const drawHeight = drawWidth * (clothesRawImage.height / clothesRawImage.width);
+        oCtx.drawImage(clothesTransparentImage, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+        oCtx.restore();
+
         link.href = outputCanvas.toDataURL('image/png');
         link.click();
     });
+
 
     // ==========================================================================
     // 8. Playwright Server Status Check
