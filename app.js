@@ -1137,31 +1137,67 @@ document.addEventListener('DOMContentLoaded', () => {
     // 11. Trigger AI Generation — GitHub Bridge
     // ==========================================================================
 
+    // ── Step tracker helpers ──────────────────────────────────────────
+    const STEPS = ['step-compress', 'step-upload', 'step-worker', 'step-gemini', 'step-done'];
+    const STEP_NUMS = ['1','2','3','4','5'];
+    function setStep(id, state) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = 'step-item ' + state;
+        const num = el.querySelector('.step-num');
+        if (num) num.textContent = state === 'done' ? '✓' : STEP_NUMS[STEPS.indexOf(id)];
+    }
+    function resetSteps() {
+        STEPS.forEach((id, i) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.className = 'step-item pending';
+            const num = el.querySelector('.step-num');
+            if (num) num.textContent = String(i + 1);
+        });
+    }
+
     btnRealAi.addEventListener('click', async () => {
         if (!dogImage || !clothesTransparentImage) {
             alert('Please select a dog photo and a raincoat first!');
             return;
         }
-        // On Netlify, token is server-side — always proceed
 
-        const loadingDesc = document.querySelector('.loading-desc');
+        resetSteps();
         aiLoadingModal.classList.add('active');
-        startStatusPolling();
+
+        // Step 3→4 auto-advance timer (worker picks up job in ~10-20s)
+        let workerTimer = null;
 
         try {
-            loadingDesc.textContent = 'Compressing images...';
+            // Step 1: Compress
+            setStep('step-compress', 'active');
             const compressedDog     = await compressImage(dogImage.src,        800, 0.82);
             const compressedClothes = await compressImage(clothesRawImage.src, 600, 0.82);
+            setStep('step-compress', 'done');
 
+            // Step 2: Upload
+            setStep('step-upload', 'active');
             const jobId = Date.now().toString();
-            loadingDesc.textContent = 'Uploading job to GitHub...';
             await ghUploadJob(jobId, compressedDog, compressedClothes);
+            setStep('step-upload', 'done');
 
-            loadingDesc.textContent = 'Waiting for local Worker to pick up the job...';
+            // Step 3: Worker picks up (auto-advance to step 4 after 20s)
+            setStep('step-worker', 'active');
+            workerTimer = setTimeout(() => {
+                setStep('step-worker', 'done');
+                setStep('step-gemini', 'active');
+            }, 20000);
+
+            // Step 4: Poll for result
             const { image: resultImageSrc, sha: resultSha } = await ghPollResult(jobId);
+            clearTimeout(workerTimer);
+            setStep('step-worker', 'done');
+            setStep('step-gemini', 'done');
 
             if (resultImageSrc && resultImageSrc.startsWith('data:image')) {
-                loadingDesc.textContent = 'Image ready! Displaying...';
+                // Step 5: Display
+                setStep('step-done', 'active');
                 const newDog = new Image();
                 newDog.onload = function() {
                     dogImage = newDog;
@@ -1170,12 +1206,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (btnRealAi) btnRealAi.disabled = true;
                     resizeCanvasToFit();
                     draw();
-                    // 生成完成，自動捲到畫布讓使用者看到照片
+                    setStep('step-done', 'done');
                     setTimeout(function() {
                         var canvas = document.getElementById('fitting-canvas');
                         if (canvas) canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }, 100);
-
                 };
                 newDog.src = resultImageSrc;
                 await ghDeleteFile('jobs/done/' + jobId + '.json', resultSha);
@@ -1184,13 +1219,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
         } catch (err) {
+            clearTimeout(workerTimer);
             console.error(err);
             alert('AI generation failed: ' + (err.message || err));
         } finally {
-            stopStatusPolling();
-            aiLoadingModal.classList.remove('active');
-            var pb = document.getElementById('loading-progress-bar');
-            if (pb) pb.style.width = '0%';
+            setTimeout(() => {
+                aiLoadingModal.classList.remove('active');
+            }, 800);
         }
     });
 });
+

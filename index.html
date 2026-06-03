@@ -78,8 +78,8 @@
                                 <img src="assets/pink_raincoat.png" alt="粉紅雨衣" class="clothes-img-thumb">
                             </div>
                             <div class="clothes-info">
-                                <span class="clothes-name">Pink Blossom</span>
-                                <span class="clothes-color-tag color-pink">櫻花粉</span>
+                                <span class="clothes-name">Fanta Orange</span>
+                                <span class="clothes-color-tag color-orange">芬達桔</span>
                             </div>
                         </div>
 
@@ -172,12 +172,51 @@
                 <div class="portal-core">🐕</div>
             </div>
             <h3 class="loading-title">Real AI 智慧生成中</h3>
-            <p class="loading-desc">準備中...</p>
-            <div class="loading-bar-container">
-                <div class="loading-bar-progress" id="loading-progress-bar" style="width:0%"></div>
+
+            <div class="step-tracker" id="step-tracker">
+                <div class="step-item pending" id="step-compress">
+                    <div class="step-circle"><span class="step-num">1</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step-text">
+                        <span class="step-name">壓縮圖片</span>
+                        <span class="step-sub">準備上傳...</span>
+                    </div>
+                </div>
+                <div class="step-item pending" id="step-upload">
+                    <div class="step-circle"><span class="step-num">2</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step-text">
+                        <span class="step-name">上傳到 GitHub</span>
+                        <span class="step-sub">建立任務中...</span>
+                    </div>
+                </div>
+                <div class="step-item pending" id="step-worker">
+                    <div class="step-circle"><span class="step-num">3</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step-text">
+                        <span class="step-name">Worker 接收任務</span>
+                        <span class="step-sub">本機程式處理中...</span>
+                    </div>
+                </div>
+                <div class="step-item pending" id="step-gemini">
+                    <div class="step-circle"><span class="step-num">4</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step-text">
+                        <span class="step-name">Gemini AI 生成</span>
+                        <span class="step-sub">約 30–60 秒...</span>
+                    </div>
+                </div>
+                <div class="step-item pending" id="step-done">
+                    <div class="step-circle"><span class="step-num">5</span></div>
+                    <div class="step-text">
+                        <span class="step-name">完成！</span>
+                        <span class="step-sub">顯示照片</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
 
     <script src="assets_data.js"></script>
     <script src="app.js"></script>

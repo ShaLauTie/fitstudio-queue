@@ -408,7 +408,9 @@ body {
     font-weight: 700;
 }
 
-.color-pink { background: rgba(216, 67, 121, 0.15); color: #ff6097; }
+.color-pink   { background: rgba(216, 67, 121, 0.15); color: #ff6097; }
+.color-orange { background: rgba(255, 69,  0,  0.15); color: #ff4500; }
+
 .color-lime { background: rgba(162, 221, 0, 0.15); color: #c4f000; }
 .color-blue { background: rgba(0, 162, 232, 0.15); color: #00b0ff; }
 
@@ -1151,23 +1153,108 @@ body {
 }
 
 /* Loading Progress Bar */
-.loading-bar-container {
-    width: 80%;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 0.5rem;
+.loading-bar-container { display: none; }
+.loading-desc { display: none; }
+
+/* ── Step Tracker ──────────────────────────────────────────────────── */
+.step-tracker {
+    width: 100%;
+    max-width: 280px;
+    margin: 1.2rem auto 0;
+    display: flex;
+    flex-direction: column;
 }
 
-.loading-bar-progress {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #ff9100, var(--accent), var(--neon-blue));
-    border-radius: 2px;
-    transition: width 0.8s ease;
-    /* animation removed — width now controlled by JS polling /api/status */
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    position: relative;
 }
+
+.step-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    transition: background 0.4s, box-shadow 0.4s, border-color 0.4s;
+}
+
+/* Pending */
+.step-item.pending .step-circle {
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.25);
+}
+
+/* Active */
+.step-item.active .step-circle {
+    background: linear-gradient(135deg, #ff6b35, #f7c59f);
+    border: 2px solid #ff6b35;
+    color: #fff;
+    box-shadow: 0 0 18px rgba(255,107,53,0.6);
+    animation: stepGlow 1.4s ease-in-out infinite;
+}
+
+/* Done */
+.step-item.done .step-circle {
+    background: linear-gradient(135deg, #00c851, #007e33);
+    border: 2px solid #00c851;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(0,200,81,0.4);
+}
+
+@keyframes stepGlow {
+    0%, 100% { box-shadow: 0 0 14px rgba(255,107,53,0.5); }
+    50%       { box-shadow: 0 0 28px rgba(255,107,53,0.9); }
+}
+
+/* Connector line between steps */
+.step-connector {
+    position: absolute;
+    left: 16px;
+    top: 34px;
+    width: 2px;
+    height: 26px;
+    background: rgba(255,255,255,0.08);
+    transition: background 0.4s;
+}
+.step-item.done .step-connector {
+    background: linear-gradient(to bottom, #00c851, rgba(0,200,81,0.2));
+}
+
+/* Step text */
+.step-text {
+    display: flex;
+    flex-direction: column;
+    padding-top: 5px;
+    padding-bottom: 22px;
+    transition: color 0.4s;
+}
+.step-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: color 0.4s;
+}
+.step-sub {
+    font-size: 0.73rem;
+    margin-top: 2px;
+    transition: color 0.4s;
+}
+
+.step-item.pending .step-name { color: rgba(255,255,255,0.28); }
+.step-item.pending .step-sub  { color: rgba(255,255,255,0.16); }
+.step-item.active  .step-name { color: #f7c59f; }
+.step-item.active  .step-sub  { color: rgba(247,197,159,0.65); }
+.step-item.done    .step-name { color: #69f0ae; }
+.step-item.done    .step-sub  { color: rgba(105,240,174,0.55); }
 
 
 /* ==========================================================================
