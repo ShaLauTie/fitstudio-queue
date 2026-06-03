@@ -1149,18 +1149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Please select a dog photo and a raincoat first!');
             return;
         }
-
-        if (!isGhConfigured()) {
-            const c = getGhConfig();
-            ghOwnerEl.value  = c.owner;
-            ghRepoEl.value   = c.repo;
-            ghTokenEl.value  = c.token;
-            ghBranchEl.value = c.branch;
-            document.getElementById('github-config-status').textContent = 'Please configure GitHub Bridge first!';
-            document.getElementById('github-config-status').className   = 'github-config-status error';
-            document.getElementById('github-config-modal').classList.add('active');
-            return;
-        }
+        // On Netlify, token is server-side — always proceed
 
         const loadingDesc = document.querySelector('.loading-desc');
         aiLoadingModal.classList.add('active');
