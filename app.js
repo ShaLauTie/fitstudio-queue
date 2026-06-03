@@ -1142,6 +1142,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const STEP_NUMS = ['1','2','3','4','5'];
     let   stepTimer = null;
 
+    function updateProgressBar() {
+        const fill = document.getElementById('step-progress-fill');
+        if (!fill) return;
+        const doneCount = STEPS.filter(id => {
+            const el = document.getElementById(id);
+            return el && el.classList.contains('done');
+        }).length;
+        const activeCount = STEPS.filter(id => {
+            const el = document.getElementById(id);
+            return el && el.classList.contains('active');
+        }).length;
+        const pct = Math.round((doneCount + activeCount * 0.5) / STEPS.length * 100);
+        fill.style.width = pct + '%';
+    }
+
     function setStep(id, state, subOverride) {
         const el = document.getElementById(id);
         if (!el) return;
@@ -1152,6 +1167,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const sub = el.querySelector('.step-sub');
             if (sub) sub.textContent = subOverride;
         }
+        updateProgressBar();
     }
 
     // Start a live seconds counter on the active step's sub-text
