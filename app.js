@@ -1138,22 +1138,47 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================================================
 
     // ── Step tracker helpers ──────────────────────────────────────────
-    const STEPS = ['step-compress', 'step-upload', 'step-worker', 'step-gemini', 'step-done'];
+    const STEPS     = ['step-compress', 'step-upload', 'step-worker', 'step-gemini', 'step-done'];
     const STEP_NUMS = ['1','2','3','4','5'];
-    function setStep(id, state) {
+    let   stepTimer = null;
+
+    function setStep(id, state, subOverride) {
         const el = document.getElementById(id);
         if (!el) return;
         el.className = 'step-item ' + state;
         const num = el.querySelector('.step-num');
         if (num) num.textContent = state === 'done' ? '✓' : STEP_NUMS[STEPS.indexOf(id)];
+        if (subOverride !== undefined) {
+            const sub = el.querySelector('.step-sub');
+            if (sub) sub.textContent = subOverride;
+        }
     }
+
+    // Start a live seconds counter on the active step's sub-text
+    function startStepTimer(id) {
+        clearInterval(stepTimer);
+        let secs = 0;
+        const el  = id && document.getElementById(id);
+        const sub = el && el.querySelector('.step-sub');
+        const origText = sub ? sub.textContent : '';
+        stepTimer = setInterval(() => {
+            secs++;
+            if (sub) sub.textContent = origText + ' (' + secs + '秒)';
+        }, 1000);
+    }
+    function stopStepTimer() { clearInterval(stepTimer); stepTimer = null; }
+
     function resetSteps() {
+        stopStepTimer();
+        const origSubs = ['準備上傳...', '建立任務中...', '本機程式處理中...', '約 30–60 秒...', '顯示照片'];
         STEPS.forEach((id, i) => {
             const el = document.getElementById(id);
             if (!el) return;
             el.className = 'step-item pending';
             const num = el.querySelector('.step-num');
             if (num) num.textContent = String(i + 1);
+            const sub = el.querySelector('.step-sub');
+            if (sub) sub.textContent = origSubs[i];
         });
     }
 
@@ -1172,28 +1197,37 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Step 1: Compress
             setStep('step-compress', 'active');
+            startStepTimer('step-compress');
             const compressedDog     = await compressImage(dogImage.src,        800, 0.82);
             const compressedClothes = await compressImage(clothesRawImage.src, 600, 0.82);
-            setStep('step-compress', 'done');
+            stopStepTimer();
+            setStep('step-compress', 'done', '✓ 完成');
 
             // Step 2: Upload
             setStep('step-upload', 'active');
+            startStepTimer('step-upload');
             const jobId = Date.now().toString();
             await ghUploadJob(jobId, compressedDog, compressedClothes);
-            setStep('step-upload', 'done');
+            stopStepTimer();
+            setStep('step-upload', 'done', '✓ 完成');
 
-            // Step 3: Worker picks up (auto-advance to step 4 after 20s)
+            // Step 3: Worker picks up (auto-advance to step 4 after 15s)
             setStep('step-worker', 'active');
+            startStepTimer('step-worker');
             workerTimer = setTimeout(() => {
-                setStep('step-worker', 'done');
+                stopStepTimer();
+                setStep('step-worker', 'done', '✓ 已接收');
                 setStep('step-gemini', 'active');
-            }, 20000);
+                startStepTimer('step-gemini');
+            }, 15000);
 
             // Step 4: Poll for result
             const { image: resultImageSrc, sha: resultSha } = await ghPollResult(jobId);
             clearTimeout(workerTimer);
-            setStep('step-worker', 'done');
-            setStep('step-gemini', 'done');
+            stopStepTimer();
+            setStep('step-worker', 'done', '✓ 已接收');
+            setStep('step-gemini', 'done', '✓ 生成完成');
+
 
             if (resultImageSrc && resultImageSrc.startsWith('data:image')) {
                 // Step 5: Display
