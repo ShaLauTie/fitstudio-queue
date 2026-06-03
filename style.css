@@ -122,6 +122,72 @@ body {
     }
 }
 
+/* ── Desktop compact mode: everything fits without scrolling ── */
+@media (min-width: 1025px) {
+    .glass-panel {
+        padding: 1.25rem 1.5rem;
+    }
+    .panel {
+        gap: 1rem;
+    }
+    .panel-section {
+        gap: 0.65rem;
+    }
+    .section-title {
+        font-size: 1rem;
+    }
+    /* Compact upload box */
+    .upload-box {
+        padding: 1rem 1.5rem;
+    }
+    .upload-icon {
+        width: 32px;
+        height: 32px;
+    }
+    .main-prompt {
+        font-size: 0.88rem;
+    }
+    /* Compact sample dogs */
+    .preset-container {
+        gap: 0.4rem;
+    }
+    .btn-preset {
+        padding: 0.45rem 0.6rem;
+        font-size: 0.82rem;
+    }
+    .dog-thumb {
+        width: 20px;
+        height: 20px;
+    }
+    /* Compact raincoat cards */
+    .clothes-carousel {
+        gap: 0.6rem;
+    }
+    .clothes-card {
+        padding: 0.5rem;
+        gap: 0.4rem;
+    }
+    .clothes-preview-container {
+        aspect-ratio: 4/3;
+    }
+    .clothes-name {
+        font-size: 0.78rem;
+    }
+    .clothes-color-tag {
+        font-size: 0.67rem;
+        padding: 0.1rem 0.3rem;
+    }
+    /* Real AI button always at bottom */
+    .panel {
+        flex: 1;
+        justify-content: space-between;
+    }
+    .btn-real-ai-big {
+        padding: 0.85rem 1.5rem;
+        font-size: 0.95rem;
+    }
+}
+
 /* Glass Panels */
 .glass-panel {
     background: var(--bg-panel);
@@ -144,6 +210,8 @@ body {
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    display: flex;
+    flex-direction: column;
 }
 
 .left-panel::-webkit-scrollbar {
